@@ -1,0 +1,41 @@
+import yfinance 
+import matplotlib.pyplot as plt
+
+data=yfinance.download("MSFT",period="6mo",auto_adjust=False)
+
+dailyreturns =((data['Close']-data['Close'].shift(1)) /data['Close'].shift(1))*100
+
+sevendayrollav=dailyreturns.rolling(7).mean()
+
+stddev=dailyreturns.rolling(7).std()
+
+dailyreturns.ffill(inplace=True)
+dailyreturns.dropna(inplace=True)
+
+sevendayrollav.ffill(inplace=True)
+sevendayrollav.dropna(inplace=True)
+
+stddev.ffill(inplace=True)
+stddev.dropna(inplace=True)
+
+print("Daily return is %-")
+print(dailyreturns)
+print("\n\n")
+
+print("7 day rolling average-")
+print(sevendayrollav)
+print("\n\n")
+
+print("7 day standard deviation-")
+print(stddev)
+
+plt.figure(figsize=(15,10))
+plt.title('Microsoft: Daily Returns, Rolling Average, and Volatility')
+plt.plot(dailyreturns.index, dailyreturns, label='Daily Returns', color='green')
+plt.plot(sevendayrollav.index, sevendayrollav, label='7 day rolling average', color='blue')
+plt.plot(stddev.index, stddev, label='7 day standard deviation', color='red')
+plt.xlabel('Date')
+plt.ylabel('Percentage')
+plt.legend()
+plt.grid(True)
+plt.show()

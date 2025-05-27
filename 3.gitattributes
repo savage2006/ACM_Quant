@@ -1,0 +1,40 @@
+import yfinance 
+import pandas as pd
+import matplotlib.pyplot as plt
+
+portfolio = {
+"INFY.NS": 15,
+"TCS.NS": 10,
+"RELIANCE.NS": 12
+}
+
+try:
+    data1 = yfinance.download("INFY.NS", period="30d", auto_adjust=False)['Adj Close']
+    data2 = yfinance.download("TCS.NS", period="30d", auto_adjust=False)['Adj Close']
+    data3 = yfinance.download("RELIANCE.NS", period="30d", auto_adjust=False)['Adj Close']
+except Exception as e:
+    print("Error downloading data:", e)
+    exit()
+
+value1=data1*portfolio['INFY.NS']
+value2=data2*portfolio['TCS.NS']
+value3=data3*portfolio['RELIANCE.NS']
+
+portfolio_value = pd.concat([value1, value2, value3], axis=1)
+portfolio_value.columns=['INFY.NS','TCS.NS','RELIANCE.NS']
+
+portfolio_value.ffill(inplace=True)
+portfolio_value.dropna(inplace=True)
+
+portfolio_value['Total Portfolio Value']=portfolio_value.sum(axis=1)
+
+plt.figure(figsize=(15,10))
+plt.title('Total portfolio value')
+plt.xlabel('Date')
+plt.ylabel('Portfolio Value')
+plt.grid(True)
+plt.plot(portfolio_value.index,portfolio_value['Total Portfolio Value'],label='Infosys',color='red')
+plt.show()
+
+latestportfoliovalue=portfolio_value['Total Portfolio Value'].iloc[-1]
+print("The latest portfolio value is-",latestportfoliovalue)

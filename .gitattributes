@@ -1,2 +1,38 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+import yfinance 
+import matplotlib.pyplot as plt
+
+
+data=yfinance.download("MSFT",period="6mo",auto_adjust=False)
+
+sma5=data['Close'].rolling(5).mean()
+data['sma5']=sma5
+
+sma20=data['Close'].rolling(20).mean()
+data['sma20']=sma20
+
+data['Signal']=((data['sma5']>data['sma20']) & (data['sma5'].shift(1)<=data['sma20'].shift(1)))
+data['Buy_Signal'] = data['Signal'].apply(lambda x: 'Buy' if x else '')
+buy_signals = data[data['Buy_Signal'] == 'Buy']
+print(buy_signals[['Close', 'sma5', 'sma20', 'Buy_Signal']])
+
+
+data['Signal1']=((data['sma5']<data['sma20']) & (data['sma5'].shift(1)>=data['sma20'].shift(1)))
+data['Sell_Signal'] = data['Signal1'].apply(lambda x: 'Sell' if x else '')
+sell_signals = data[data['Sell_Signal'] == 'Sell']
+print(sell_signals[['Close', 'sma5', 'sma20', 'Sell_Signal']])
+
+
+plt.figure(figsize=(15,10))
+plt.title("Microsoft")
+plt.plot(data.index,data['Close'],label='Close Price',color='green')
+plt.plot(data.index,data['sma5'],label='5 SMA',color='blue')
+plt.plot(data.index,data['sma20'],label='20 SMA',color='red')
+plt.xlabel('Date')
+plt.ylabel('Price')
+
+
+plt.plot(data.index[data['Buy_Signal']=='Buy'],data['Close'][data['Buy_Signal']=='Buy'],'^',label='Buy',color='green', markersize=10, linestyle='None')
+plt.plot(data.index[data['Sell_Signal']=='Sell'],data['Close'][data['Sell_Signal']=='Sell'],'o',label='Sell', color='red', markersize=10, linestyle='None')
+plt.legend()
+
+plt.show()
